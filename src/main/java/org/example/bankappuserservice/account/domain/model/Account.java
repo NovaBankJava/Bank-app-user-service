@@ -1,0 +1,78 @@
+package org.example.bankappuserservice.account.domain.model;
+
+import java.util.UUID;
+
+public class Account {
+
+    private final String id;
+    private final String userId;
+    private final String bank;
+    private final String branch;
+    private final String accountNumber;
+    private final AccountType type;
+    private boolean primary;
+
+    public Account(String id, String userId, String bank, String branch,
+                   String accountNumber, AccountType type, boolean primary) {
+        this.id = id;
+        this.userId = userId;
+        this.bank = requireText(bank, "bank");
+        this.branch = requireText(branch, "branch");
+        this.accountNumber = requireText(accountNumber, "accountNumber");
+        this.type = type;
+        this.primary = primary;
+    }
+
+    public static Account create(String userId, String bank, String branch,
+                                 String accountNumber, AccountType type) {
+        return new Account(UUID.randomUUID().toString(), userId, bank, branch,
+                accountNumber, type, false);
+    }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+        return value.trim();
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void markAsPrimary() {
+        this.primary = true;
+    }
+
+    public void unmarkAsPrimary() {
+        this.primary = false;
+    }
+
+    public boolean belongsTo(String userId) {
+        return this.userId.equals(userId);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getBank() {
+        return bank;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public AccountType getType() {
+        return type;
+    }
+}
