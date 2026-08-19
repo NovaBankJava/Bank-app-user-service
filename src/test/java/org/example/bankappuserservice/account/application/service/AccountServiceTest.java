@@ -3,21 +3,14 @@ package org.example.bankappuserservice.account.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.example.bankappuserservice.account.application.port.out.AccountRepositoryPort;
-import org.example.bankappuserservice.account.application.port.out.UserLookupPort;
 import org.example.bankappuserservice.account.domain.exception.AccountNotFoundException;
 import org.example.bankappuserservice.account.domain.exception.DuplicateAccountException;
 import org.example.bankappuserservice.account.domain.exception.InvalidCpfException;
-import org.example.bankappuserservice.account.domain.exception.OwnershipMismatchException;
-import org.example.bankappuserservice.account.domain.exception.SalaryAccountNotAllowedForMinorException;
-import org.example.bankappuserservice.account.domain.exception.UserNotFoundException;
 import org.example.bankappuserservice.account.domain.model.Account;
 import org.example.bankappuserservice.account.domain.model.AccountType;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,14 +21,11 @@ class AccountServiceTest {
     private static final String CPF = "52998224725";
 
     private final String userId = UUID.randomUUID().toString();
-    private FakeUserLookup userLookup;
     private AccountService service;
 
     @BeforeEach
     void setUp() {
-        userLookup = new FakeUserLookup();
-        userLookup.addAdult(userId, CPF);
-        service = new AccountService(new InMemoryAccountRepository(), userLookup);
+        service = new AccountService(new InMemoryAccountRepository());
     }
 
     @Test
@@ -52,13 +42,6 @@ class AccountServiceTest {
     }
 
     @Test
-    void creatingAccountWithWrongCpfFails() {
-        assertThatThrownBy(() -> service.createAccount(
-                userId, "11144477735", "NovaBank", "0001", "111111", AccountType.CHECKING, false))
-                .isInstanceOf(OwnershipMismatchException.class);
-    }
-
-    @Test
     void creatingAccountWithInvalidCpfFails() {
         assertThatThrownBy(() -> service.createAccount(
                 userId, "111", "NovaBank", "0001", "111111", AccountType.CHECKING, false))
@@ -68,7 +51,6 @@ class AccountServiceTest {
     @Test
     void creatingDuplicateAccountFails() {
         create(AccountType.CHECKING, "111111", false);
-
         assertThatThrownBy(() -> service.createAccount(
                 userId, CPF, "NovaBank", "0001", "111111", AccountType.CHECKING, false))
                 .isInstanceOf(DuplicateAccountException.class);
@@ -79,34 +61,6 @@ class AccountServiceTest {
         assertThatThrownBy(() -> service.createAccount(
                 "  ", CPF, "NovaBank", "0001", "111111", AccountType.CHECKING, false))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void minorCannotCreateSalaryAccount() {
-        String minorId = UUID.randomUUID().toString();
-        userLookup.addMinor(minorId, CPF);
-
-        assertThatThrownBy(() -> service.createAccount(
-                minorId, CPF, "NovaBank", "0001", "111111", AccountType.SALARY, false))
-                .isInstanceOf(SalaryAccountNotAllowedForMinorException.class);
-    }
-
-    @Test
-    void minorCanCreateNonSalaryAccount() {
-        String minorId = UUID.randomUUID().toString();
-        userLookup.addMinor(minorId, CPF);
-
-        Account created = service.createAccount(
-                minorId, CPF, "NovaBank", "0001", "111111", AccountType.SAVINGS, false);
-
-        assertThat(created.isPrimary()).isTrue();
-    }
-
-    @Test
-    void creatingAccountForUnknownUserFails() {
-        assertThatThrownBy(() -> service.createAccount(
-                UUID.randomUUID().toString(), CPF, "NovaBank", "0001", "111111", AccountType.CHECKING, false))
-                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -125,10 +79,7 @@ class AccountServiceTest {
     @Test
     void setPrimaryOnAccountOfAnotherUserFails() {
         Account account = create(AccountType.CHECKING, "111111", false);
-        String otherId = UUID.randomUUID().toString();
-        userLookup.addAdult(otherId, CPF);
-
-        assertThatThrownBy(() -> service.setPrimaryAccount(otherId, account.getId()))
+        assertThatThrownBy(() -> service.setPrimaryAccount(UUID.randomUUID().toString(), account.getId()))
                 .isInstanceOf(AccountNotFoundException.class);
     }
 
@@ -147,23 +98,6 @@ class AccountServiceTest {
 
     private Account create(AccountType type, String number, boolean primary) {
         return service.createAccount(userId, CPF, "NovaBank", "0001", number, type, primary);
-    }
-
-    static class FakeUserLookup implements UserLookupPort {
-        private final Map<String, UserData> users = new HashMap<>();
-
-        void addAdult(String userId, String cpf) {
-            users.put(userId, new UserData(userId, cpf, LocalDate.now().minusYears(30)));
-        }
-
-        void addMinor(String userId, String cpf) {
-            users.put(userId, new UserData(userId, cpf, LocalDate.now().minusYears(10)));
-        }
-
-        @Override
-        public Optional<UserData> findByUserId(String userId) {
-            return Optional.ofNullable(users.get(userId));
-        }
     }
 
     static class InMemoryAccountRepository implements AccountRepositoryPort {

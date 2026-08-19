@@ -1,5 +1,17 @@
 package org.example.bankappuserservice.account.adapter.in.web;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -8,18 +20,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.UUID;
-import org.example.bankappuserservice.account.adapter.out.user.StubUserLookupAdapter;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,11 +33,13 @@ class AccountControllerIT {
 
     private final String userId = UUID.randomUUID().toString();
 
+    private static final String VALID_CPF = "52998224725";
+
     @Test
     void createsAndListsAccount() throws Exception {
         mockMvc.perform(post("/api/v1/accounts/createAccount")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(StubUserLookupAdapter.STUB_CPF, "123456", "CHECKING", true)))
+                        .content(body(VALID_CPF, "123456", "CHECKING", true)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is(0)))
                 .andExpect(jsonPath("$.data.primary", is(true)))
@@ -50,12 +52,25 @@ class AccountControllerIT {
     }
 
     @Test
-    void wrongCpfReturnsThirdPartyStatus() throws Exception {
+    void invalidCpfIsRejectedAtTheBoundary() throws Exception {
+        // "99999999999" fails the @CPF check on the DTO, so @Valid rejects it
+        // before the service runs -> MethodArgumentNotValidException -> INVALID_INPUT (1)
         mockMvc.perform(post("/api/v1/accounts/createAccount")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body("99999999999", "123456", "CHECKING", false)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is(2)));
+                .andExpect(jsonPath("$.status", is(1)));
+    }
+
+    @Test
+    void duplicateAccountReturnsDuplicateStatus() throws Exception {
+        createAccount("777777");
+
+        mockMvc.perform(post("/api/v1/accounts/createAccount")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body(VALID_CPF, "777777", "CHECKING", false)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is(6)));
     }
 
     @Test
@@ -76,15 +91,19 @@ class AccountControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is(0)));
 
-        MvcResult result = mockMvc.perform(get("/api/v1/accounts/listAccounts/{userId}", userId))
+        MvcResult result = mockMvc.perform(
+                        get("/api/v1/accounts/listAccounts/{userId}", userId))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        JsonNode accounts = objectMapper.readTree(result.getResponse().getContentAsString())
+        JsonNode accounts = objectMapper
+                .readTree(result.getResponse().getContentAsString())
                 .get("data");
+
         for (JsonNode account : accounts) {
             String id = account.get("id").asText();
             boolean primary = account.get("primary").asBoolean();
+
             if (id.equals(second)) {
                 org.assertj.core.api.Assertions.assertThat(primary).isTrue();
             } else if (id.equals(first)) {
@@ -94,19 +113,31 @@ class AccountControllerIT {
     }
 
     private String createAccount(String number) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/accounts/createAccount")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body(StubUserLookupAdapter.STUB_CPF, number, "CHECKING", false)))
+        MvcResult result = mockMvc.perform(
+                        post("/api/v1/accounts/createAccount")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(body(VALID_CPF, number, "CHECKING", false)))
                 .andExpect(status().isOk())
                 .andReturn();
-        return objectMapper.readTree(result.getResponse().getContentAsString())
-                .get("data").get("id").asText();
+
+        return objectMapper
+                .readTree(result.getResponse().getContentAsString())
+                .get("data")
+                .get("id")
+                .asText();
     }
 
     private String body(String cpf, String number, String type, boolean primary) {
         return """
-                {"userId":"%s","cpf":"%s","bank":"NovaBank","branch":"0001",\
-                "accountNumber":"%s","type":"%s","setAsPrimary":%s}
+                {
+                    "userId": "%s",
+                    "cpf": "%s",
+                    "bank": "NovaBank",
+                    "branch": "0001",
+                    "accountNumber": "%s",
+                    "type": "%s",
+                    "setAsPrimary": %s
+                }
                 """.formatted(userId, cpf, number, type, primary);
     }
 }

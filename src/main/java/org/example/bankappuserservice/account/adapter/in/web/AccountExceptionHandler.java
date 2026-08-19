@@ -5,9 +5,6 @@ import org.example.bankappuserservice.account.adapter.in.web.dto.ApiResponse;
 import org.example.bankappuserservice.account.domain.exception.AccountNotFoundException;
 import org.example.bankappuserservice.account.domain.exception.DuplicateAccountException;
 import org.example.bankappuserservice.account.domain.exception.InvalidCpfException;
-import org.example.bankappuserservice.account.domain.exception.OwnershipMismatchException;
-import org.example.bankappuserservice.account.domain.exception.SalaryAccountNotAllowedForMinorException;
-import org.example.bankappuserservice.account.domain.exception.UserNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,26 +18,6 @@ public class AccountExceptionHandler {
         log.warn("Account not accessible: {}", ex.getMessage());
         return ApiResponse.error(ApiResponse.THIRD_PARTY_ACCESS,
                 "account cannot be accessed by third parties");
-    }
-
-    @ExceptionHandler(OwnershipMismatchException.class)
-    public ApiResponse<Void> handleOwnershipMismatch(OwnershipMismatchException ex) {
-        log.warn("Ownership mismatch: {}", ex.getMessage());
-        return ApiResponse.error(ApiResponse.THIRD_PARTY_ACCESS,
-                "informed CPF does not belong to the user");
-    }
-
-    @ExceptionHandler(SalaryAccountNotAllowedForMinorException.class)
-    public ApiResponse<Void> handleMinorSalary(SalaryAccountNotAllowedForMinorException ex) {
-        log.warn("Business rule violation: {}", ex.getMessage());
-        return ApiResponse.error(ApiResponse.BUSINESS_RULE,
-                "minor user cannot have a salary account");
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ApiResponse<Void> handleUserNotFound(UserNotFoundException ex) {
-        log.warn("User not found: {}", ex.getMessage());
-        return ApiResponse.error(ApiResponse.USER_NOT_FOUND, "user not found");
     }
 
     @ExceptionHandler(InvalidCpfException.class)

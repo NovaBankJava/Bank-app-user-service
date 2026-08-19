@@ -7,8 +7,9 @@ import org.example.bankappuserservice.account.application.port.in.CreateAccountU
 import org.example.bankappuserservice.account.application.port.in.DeleteAccountUseCase;
 import org.example.bankappuserservice.account.application.port.in.SetPrimaryAccountUseCase;
 import org.example.bankappuserservice.account.application.port.out.AccountRepositoryPort;
-import org.example.bankappuserservice.account.application.port.out.UserLookupPort;
-import org.example.bankappuserservice.account.domain.exception.*;
+import org.example.bankappuserservice.account.domain.exception.AccountNotFoundException;
+import org.example.bankappuserservice.account.domain.exception.DuplicateAccountException;
+import org.example.bankappuserservice.account.domain.exception.InvalidCpfException;
 import org.example.bankappuserservice.account.domain.model.Account;
 import org.example.bankappuserservice.account.domain.model.AccountType;
 import org.example.bankappuserservice.account.domain.validation.CpfValidator;
@@ -17,13 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AccountService implements CreateAccountUseCase, SetPrimaryAccountUseCase, DeleteAccountUseCase {
+public class AccountService
+        implements CreateAccountUseCase, SetPrimaryAccountUseCase, DeleteAccountUseCase {
 
     private final AccountRepositoryPort accountRepositoryPort;
-    private final UserLookupPort userLookupPort;
 
     @Override
-    public Account createAccount(String userId, String cpf, String bank, String branch, String accountNumber, AccountType type, boolean setAsPrimary) {
+    public Account createAccount(String userId, String cpf, String bank, String branch,
+                                 String accountNumber, AccountType type, boolean setAsPrimary) {
         log.info("Creating account for user: {}", userId);
 
         requireText(userId, "userId");
@@ -32,18 +34,8 @@ public class AccountService implements CreateAccountUseCase, SetPrimaryAccountUs
             log.warn("Invalid CPF format for user: {}", userId);
             throw new InvalidCpfException();
         }
-
-        UserLookupPort.UserData user = userLookupPort.findByUserId(userId).orElseThrow(() -> new UserNotFoundException(userId));
-
-        if (!user.cpf().equals(cpf)) {
-            log.warn("CPF mismatch for user: {}", userId);
-            throw new OwnershipMismatchException(userId);
-        }
-        if (type == AccountType.SALARY && user.isMinor()) {
-            log.warn("Minor user attempted to create salary account: {}", userId);
-            throw new SalaryAccountNotAllowedForMinorException(userId);
-        }
-        if (accountRepositoryPort.existsByUserIdAndBankAndBranchAndAccountNumber(userId, bank, branch, accountNumber)) {
+        if (accountRepositoryPort.existsByUserIdAndBankAndBranchAndAccountNumber(
+                userId, bank, branch, accountNumber)) {
             log.warn("Duplicate account for user: {}", userId);
             throw new DuplicateAccountException();
         }
