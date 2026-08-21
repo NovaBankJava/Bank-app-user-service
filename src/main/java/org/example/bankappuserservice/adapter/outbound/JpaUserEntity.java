@@ -18,16 +18,23 @@ import java.time.LocalDateTime;
 @Table
 public class JpaUserEntity {
 
-    @Id
+   @Id
    private String id;
+
    private String name;
+
+   private String phone;
+
    @CPF
    private String cpf;
    @Email
    private String email;
+
    private String password;
+
    @Enumerated(EnumType.STRING)
    private AccountStatus status;
+
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
    private LocalDateTime createAt;
 
