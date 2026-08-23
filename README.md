@@ -82,7 +82,7 @@ conecta ao centro através de interfaces.
 - **Domínio**: entidades e regras em Java puro, sem anotação de framework.
 
 Trocar o banco (H2 -> Postgres) mexe só no adapter — o centro não fica sabendo.
-A entidade de domínio (`Account`) e a entidade JPA (`AccountJpaEntity`) são
+A entidade de domínio (`Account`) e a entidade JPA (`AccountEntity`) são
 **classes diferentes**, ligadas por um mapper: o domínio é puro, as anotações de
 JPA/Lombok ficam só na borda de persistência.
 
@@ -165,7 +165,7 @@ Pirâmide de testes, cada nível no seu lugar:
 - **Domínio** — unitário puro (`AccountTest`), sem Spring nem banco.
 - **Aplicação** — service com fakes das portas (`AccountServiceTest`), sem Spring
   nem banco. Cobre todas as regras e validações.
-- **Persistência** — `@DataJpaTest` com H2 (`AccountPersistenceAdapterTest`).
+- **Persistência** — `@DataJpaTest` com H2 (`AccountAdapterTest`).
 - **Web** — `@SpringBootTest` + MockMvc (`AccountControllerIT`).
 
 ---
