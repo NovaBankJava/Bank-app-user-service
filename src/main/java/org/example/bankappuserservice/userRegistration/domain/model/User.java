@@ -2,7 +2,6 @@ package org.example.bankappuserservice.userRegistration.domain.model;
 
 
 import java.time.Instant;
-import java.util.UUID;
 
 public class User {
 
@@ -13,21 +12,33 @@ public class User {
     private String cpf;
     private String passwordHash;
     private UserStatus userStatus;
-    private Instant createAt;
+    private Instant createdAt;
 
-    public User(String name, String phone, String email, String cpf, String passwordHash, Instant createAt) {
+
+    public User(String name, String phone, String email, String cpf, String passwordHash, Instant createdAt) {
 
         this.name = requireText(name, "name");
         this.phone = requireText(phone, "phone");
         this.email = requireText(email, "email");
         this.cpf = requireText(cpf, "cpf");
         this.passwordHash = requireText(passwordHash, "passwordHash");
-        this.createAt = createAt;
+        this.createdAt = createdAt;
 
         this.userStatus = UserStatus.PENDING_VERIFICATION;
 
     }
 
+
+    public User(String id, String name, String phone, String email, String cpf, String passwordHash, UserStatus userStatus, Instant createdAt) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.cpf = cpf;
+        this.passwordHash = passwordHash;
+        this.userStatus = userStatus;
+        this.createdAt = createdAt;
+    }
 
     public void activate() {
         this.userStatus = UserStatus.ACTIVE;
@@ -69,7 +80,7 @@ public class User {
     }
 
     public Instant getCreatedAt() {
-        return createAt;
+        return createdAt;
     }
 
     public UserStatus getStatus() {
