@@ -5,11 +5,12 @@ import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.bankappuserservice.userRegistration.domain.model.AccountStatus;
+import org.example.bankappuserservice.userRegistration.domain.model.UserStatus;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,17 +27,20 @@ public class JpaUserEntity {
    private String phone;
 
    @CPF
+   @Column(unique = true)
    private String cpf;
+
    @Email
+   @Column(unique = true)
    private String email;
 
-   private String password;
+   private String passwordHash;
 
    @Enumerated(EnumType.STRING)
-   private AccountStatus status;
+   private UserStatus status;
 
    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-   private LocalDateTime createAt;
+   private Instant createdAt;
 
 
 
