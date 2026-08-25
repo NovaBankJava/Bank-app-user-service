@@ -2,8 +2,7 @@ package org.example.bankappuserservice.infra.adapter.out;
 
 import org.example.bankappuserservice.account.domain.model.Account;
 import org.example.bankappuserservice.account.domain.model.AccountType;
-import org.example.bankappuserservice.infra.adapter.out.AccountAdapter;
-import org.example.bankappuserservice.infra.adapter.out.mapper.AccountOutMapper;
+import org.example.bankappuserservice.infra.adapter.out.mapper.AccountOutMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -14,7 +13,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import({AccountAdapter.class, AccountOutMapper.class})
+@Import({AccountAdapter.class, AccountOutMapperImpl.class})
 class AccountAdapterTest {
 
     @Autowired

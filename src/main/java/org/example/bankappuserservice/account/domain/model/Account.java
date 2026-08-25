@@ -1,8 +1,11 @@
 package org.example.bankappuserservice.account.domain.model;
 
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class Account {
 
     private final String id;
@@ -50,13 +53,4 @@ public class Account {
         }
         return value.trim();
     }
-
-    public String getId() { return id; }
-    public String getUserId() { return userId; }
-    public String getBank() { return bank; }
-    public String getBranch() { return branch; }
-    public String getAccountNumber() { return accountNumber; }
-    public AccountType getType() { return type; }
-    public Instant getCreatedAt() { return createdAt; }
-    public boolean isPrimary() { return primary; }
 }
