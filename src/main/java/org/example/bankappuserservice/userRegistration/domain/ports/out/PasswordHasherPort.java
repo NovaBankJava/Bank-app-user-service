@@ -1,4 +1,4 @@
-package org.example.bankappuserservice.userRegistration.application.port.out;
+package org.example.bankappuserservice.userRegistration.domain.ports.out;
 
 public interface PasswordHasherPort {
 

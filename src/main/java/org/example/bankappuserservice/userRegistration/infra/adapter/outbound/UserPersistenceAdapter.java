@@ -1,6 +1,6 @@
 package org.example.bankappuserservice.adapter.outbound;
 
-import org.example.bankappuserservice.userRegistration.application.port.out.UserRepositoryPort;
+import org.example.bankappuserservice.userRegistration.domain.ports.out.UserRepositoryPort;
 import org.example.bankappuserservice.userRegistration.domain.model.User;
 import org.springframework.stereotype.Component;
 

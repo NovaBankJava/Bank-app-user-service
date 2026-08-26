@@ -2,10 +2,10 @@ package org.example.bankappuserservice.userRegistration.application.service;
 
 import org.example.bankappuserservice.userRegistration.application.exception.CpfAlreadyExistsException;
 import org.example.bankappuserservice.userRegistration.application.exception.EmailAlreadyExistsException;
-import org.example.bankappuserservice.userRegistration.application.port.in.CreateUserInput;
-import org.example.bankappuserservice.userRegistration.application.port.in.CreateUserUseCase;
-import org.example.bankappuserservice.userRegistration.application.port.out.PasswordHasherPort;
-import org.example.bankappuserservice.userRegistration.application.port.out.UserRepositoryPort;
+import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserInput;
+import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserUseCase;
+import org.example.bankappuserservice.userRegistration.domain.ports.out.PasswordHasherPort;
+import org.example.bankappuserservice.userRegistration.domain.ports.out.UserRepositoryPort;
 import org.example.bankappuserservice.userRegistration.domain.model.User;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ public class CreateUserService implements CreateUserUseCase {
     }
 
     @Override
-    public User create(CreateUserInput input) {
+    public User execute(CreateUserInput input) {
 
 
         if (userRepositoryPort.existsByCpf(input.cpf())) {
