@@ -1,4 +1,4 @@
-package org.example.bankappuserservice.adapter.outbound;
+package org.example.bankappuserservice.userRegistration.infra.Integration;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

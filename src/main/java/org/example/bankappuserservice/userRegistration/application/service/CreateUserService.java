@@ -19,6 +19,7 @@ public class CreateUserService implements CreateUserUseCase {
     private final PasswordHasherPort passwordHasherPort;
     private final UserRepositoryPort userRepositoryPort;
 
+
     public CreateUserService(
 
             PasswordHasherPort passwordHasherPort,
@@ -46,7 +47,10 @@ public class CreateUserService implements CreateUserUseCase {
 
         User user = new User( input.name(),input.phone(),input.email(),input.cpf(),passwordHash,createdAt);
 
+
+
         return userRepositoryPort.save(user);
+
 
     }
 

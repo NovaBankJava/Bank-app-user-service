@@ -1,6 +1,7 @@
-package org.example.bankappuserservice.adapter.outbound;
+package org.example.bankappuserservice.userRegistration.infra.adapter.outbound;
 
 import org.example.bankappuserservice.userRegistration.domain.model.User;
+import org.example.bankappuserservice.userRegistration.infra.Integration.JpaUserEntity;
 import org.springframework.stereotype.Component;
 
 @Component
