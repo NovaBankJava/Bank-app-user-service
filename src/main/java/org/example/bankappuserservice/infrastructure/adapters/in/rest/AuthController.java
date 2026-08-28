@@ -20,8 +20,8 @@ public class AuthController {
     }
 
     @PostMapping
-    public ResponseEntity<String> save(@RequestBody Map<String, String> request){
-        loginUseCase.execute(request.get("identifier"), request.get("password"));
-        return ResponseEntity.ok("Autenticado com sucesso!");
+    public ResponseEntity<Map<String, String>> save(@RequestBody Map<String, String> request){
+        var response = loginUseCase.execute(request.get("identifier"), request.get("password"));
+        return ResponseEntity.ok(response);
     }
 }
