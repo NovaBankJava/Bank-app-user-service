@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface UserRepositoryPort {
     Optional<User> findByEmailOrCpf(String identifier);
+    void save(User user);
 }
