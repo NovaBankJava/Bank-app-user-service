@@ -4,6 +4,7 @@ import org.example.bankappuserservice.userRegistration.application.exception.Cpf
 import org.example.bankappuserservice.userRegistration.application.exception.EmailAlreadyExistsException;
 import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserInput;
 import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserUseCase;
+import org.example.bankappuserservice.userRegistration.domain.ports.out.IdGeneratorPort;
 import org.example.bankappuserservice.userRegistration.domain.ports.out.PasswordHasherPort;
 import org.example.bankappuserservice.userRegistration.domain.ports.out.UserRepositoryPort;
 import org.example.bankappuserservice.userRegistration.domain.model.User;
@@ -18,15 +19,18 @@ public class CreateUserService implements CreateUserUseCase {
 
     private final PasswordHasherPort passwordHasherPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final IdGeneratorPort idGeneratorPort;
 
 
     public CreateUserService(
 
             PasswordHasherPort passwordHasherPort,
-            UserRepositoryPort userRepositoryPort
+            UserRepositoryPort userRepositoryPort,
+            IdGeneratorPort idGeneratorPort
     ) {
         this.passwordHasherPort = passwordHasherPort;
         this.userRepositoryPort = userRepositoryPort;
+        this.idGeneratorPort = idGeneratorPort;
     }
 
     @Override
@@ -45,7 +49,9 @@ public class CreateUserService implements CreateUserUseCase {
 
         Instant createdAt = Instant.now();
 
-        User user = new User( input.name(),input.phone(),input.email(),input.cpf(),passwordHash,createdAt);
+        String generatedId = idGeneratorPort.generateId();
+
+        User user = new User(generatedId ,input.name(),input.phone(),input.email(),input.cpf(),passwordHash,createdAt);
 
 
 

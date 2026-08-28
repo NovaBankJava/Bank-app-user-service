@@ -15,8 +15,9 @@ public class User {
     private Instant createdAt;
 
 
-    public User(String name, String phone, String email, String cpf, String passwordHash, Instant createdAt) {
+    public User(String id,String name, String phone, String email, String cpf, String passwordHash, Instant createdAt) {
 
+        this.id = requireText(id,"id") ;
         this.name = requireText(name, "name");
         this.phone = requireText(phone, "phone");
         this.email = requireText(email, "email");
