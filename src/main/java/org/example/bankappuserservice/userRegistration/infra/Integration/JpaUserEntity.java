@@ -1,4 +1,4 @@
-package org.example.bankappuserservice.userRegistration.infra.Integration;
+package org.example.bankappuserservice.userRegistration.infra.Intregation;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
