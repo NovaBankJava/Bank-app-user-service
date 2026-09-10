@@ -1,6 +1,8 @@
 package org.example.bankappuserservice.userRegistration.domain.model;
 
 
+import org.example.bankappuserservice.userRegistration.domain.exception.InvalidUserException;
+
 import java.time.Instant;
 
 public class User {
@@ -51,7 +53,7 @@ public class User {
 
     private static String requireText(String value, String field) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " must not be blank");
+            throw new InvalidUserException("must not be blank or null");
         }
         return value.trim();
     }
