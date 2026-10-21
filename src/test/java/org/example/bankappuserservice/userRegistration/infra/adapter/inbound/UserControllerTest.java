@@ -6,8 +6,11 @@ import org.example.bankappuserservice.userRegistration.application.exception.Cpf
 import org.example.bankappuserservice.userRegistration.application.exception.EmailAlreadyExistsException;
 import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserInput;
 import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserUseCase;
+import org.example.bankappuserservice.userRegistration.infra.adapter.dtos.Request.UserRequestDTO;
+import org.example.bankappuserservice.userRegistration.infra.adapter.dtos.mapper.UserRequestMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.databind.ObjectMapper;
@@ -15,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 
+import static org.mockito.Mockito.never;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,7 +27,11 @@ public class UserControllerTest {
     private final CreateUserUseCase createUserUseCase =
             Mockito.mock(CreateUserUseCase.class);
 
-    private final UserController controller = new UserController(createUserUseCase);
+    @Autowired
+    private final UserRequestMapper userRequestMapper =
+            new UserRequestMapper();
+
+    private final UserController controller = new UserController(createUserUseCase, userRequestMapper);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,19 +39,29 @@ public class UserControllerTest {
 
     private CreateUserInput input;
 
+    private UserRequestDTO dto;
+
     private String json;
 
     @BeforeEach
     void setup() {
 
+        dto = new UserRequestDTO(
+                "user",
+                "233.543.771-27",
+                "user@gmail.com",
+                "75988887777",
+                "12345678"
+        );
+
         input = new CreateUserInput(
                 "user",
-                "12345678910",
+                "233.543.771-27",
                 "user@gmail.com",
                 "75988887777",
                 "12345678");
 
-        json = objectMapper.writeValueAsString(input);
+        json = objectMapper.writeValueAsString(dto);
 
 
 
@@ -56,8 +74,6 @@ public class UserControllerTest {
 
     @Test
     void shouldReturn201CreatedAndExecute() throws Exception {
-
-        String json = objectMapper.writeValueAsString(input);
 
         mockMvc.perform(post("/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,15 +117,22 @@ public class UserControllerTest {
     @Test
     void shouldReturn400WhenConstraintViolationOccurs() throws Exception{
 
-        Mockito.when(createUserUseCase.execute(input))
-                .thenThrow(ConstraintViolationException.class);
+       UserRequestDTO invalidDto = new UserRequestDTO(
+               " ",
+               "233.543.771-27",
+               "user@gmail.com",
+               "75988887777",
+               "12345678"
+       );
+
+       String invalidJson = objectMapper.writeValueAsString(invalidDto);
 
         mockMvc.perform(post("/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(json)
+                .content(invalidJson)
         ).andExpect(status().isBadRequest());
 
-        Mockito.verify(createUserUseCase).execute(input);
+        Mockito.verify(createUserUseCase,never()).execute(input);
 
     }
 
