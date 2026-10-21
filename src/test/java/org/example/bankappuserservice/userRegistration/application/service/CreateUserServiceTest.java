@@ -5,6 +5,7 @@ import org.example.bankappuserservice.userRegistration.application.exception.Ema
 import org.example.bankappuserservice.userRegistration.domain.model.User;
 import org.example.bankappuserservice.userRegistration.domain.model.UserStatus;
 import org.example.bankappuserservice.userRegistration.domain.ports.in.CreateUserInput;
+import org.example.bankappuserservice.userRegistration.domain.ports.out.AccountConfirmationEmailPort;
 import org.example.bankappuserservice.userRegistration.domain.ports.out.IdGeneratorPort;
 import org.example.bankappuserservice.userRegistration.domain.ports.out.PasswordHasherPort;
 import org.example.bankappuserservice.userRegistration.domain.ports.out.UserRepositoryPort;
@@ -24,8 +25,12 @@ public class CreateUserServiceTest {
             Mockito.mock(PasswordHasherPort.class);
     private final IdGeneratorPort idGeneratorPort =
             Mockito.mock(IdGeneratorPort.class);
+    private final AccountConfirmationEmailPort accountConfirmationEmailPort =
+            Mockito.mock(AccountConfirmationEmailPort.class);
+
 
     private final CreateUserService service = new CreateUserService(
+            accountConfirmationEmailPort,
             passwordHasherPort,
             userRepositoryPort,
             idGeneratorPort);
@@ -72,6 +77,11 @@ public class CreateUserServiceTest {
                 Mockito.never()
         ).save(Mockito.any());
 
+        Mockito.verify(
+                accountConfirmationEmailPort,
+                Mockito.never()
+        ).sendWelcomeEmail(Mockito.anyString(),Mockito.anyString());
+
 
     }
 
@@ -115,6 +125,12 @@ public class CreateUserServiceTest {
                 Mockito.never()
         ).save(Mockito.any());
 
+        Mockito.verify(
+                accountConfirmationEmailPort,
+                Mockito.never()
+        ).sendWelcomeEmail(Mockito.anyString(),Mockito.anyString());
+
+
     }
 
     // happy-path
@@ -155,6 +171,9 @@ public class CreateUserServiceTest {
         Mockito.verify(
                 userRepositoryPort)
                 .save(userArgumentCaptor.capture());
+
+        Mockito.verify(accountConfirmationEmailPort)
+                .sendWelcomeEmail("user@gmail.com", "user");
 
         User userCapture = userArgumentCaptor.getValue();
 
